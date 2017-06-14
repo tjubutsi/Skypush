@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QSystemTrayIcon>
+#include <QMenu>
+#include <QAction>
 
 class TrayHandler : public QObject
 {
@@ -11,10 +13,14 @@ class TrayHandler : public QObject
         explicit TrayHandler(QObject *parent = nullptr);
 
     private:
+        QMenu *trayMenu;
         QSystemTrayIcon *trayIcon;
+        QAction *quitAction;
+        QAction *settingsAction;
 
     private slots:
-        void test(QSystemTrayIcon::ActivationReason reason);
+        void trayActivate(QSystemTrayIcon::ActivationReason reason);
+        void openSettings();
 };
 
 #endif // TRAYHANDLER_H
