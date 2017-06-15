@@ -21,6 +21,9 @@ class TrayHandler : public QObject
     private slots:
         void trayActivate(QSystemTrayIcon::ActivationReason reason);
         void openSettings();
+        void createContextMenu();
+        void createTrayIcon();
+        void exit();
 };
 
 #endif // TRAYHANDLER_H
