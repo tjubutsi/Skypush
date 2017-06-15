@@ -1,5 +1,5 @@
-#include "trayhandler.h"
-#include "helpers.h"
+#include "skypush.h"
+#include "systemtray.h"
 #include <QApplication>
 #include <QDebug>
 
@@ -8,10 +8,10 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    TrayHandler t;
-    Helpers h;
+    Skypush skypush;
+    SystemTray s;
 
-    if (!h.registerHotkeys())
+    if (!skypush.registerHotkeys())
     {
         qDebug() << "registering failed";
         qApp->quit();

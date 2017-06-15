@@ -1,16 +1,16 @@
-#ifndef TRAYHANDLER_H
-#define TRAYHANDLER_H
+#ifndef SYSTEMTRAY_H
+#define SYSTEMTRAY_H
 
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QAction>
 
-class TrayHandler : public QObject
+class SystemTray : public QObject
 {
     Q_OBJECT
     public:
-        explicit TrayHandler(QObject *parent = nullptr);
+        explicit SystemTray(QObject *parent = nullptr);
 
     private:
         QMenu *trayMenu;
@@ -26,4 +26,4 @@ class TrayHandler : public QObject
         void exit();
 };
 
-#endif // TRAYHANDLER_H
+#endif // SYSTEMTRAY_H

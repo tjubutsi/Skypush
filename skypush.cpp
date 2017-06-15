@@ -1,9 +1,10 @@
-#include "helpers.h"
+#include "skypush.h"
+#include "systemtray.h"
 #include <QHotkey>
 #include <QApplication>
 #include <QDebug>
 
-Helpers::Helpers(QObject *parent) :
+Skypush::Skypush(QObject *parent) :
     QObject(parent),
     areaHotkey(new QHotkey(this)),
     windowHotkey(new QHotkey(this)),
@@ -11,11 +12,11 @@ Helpers::Helpers(QObject *parent) :
 {
 }
 
-bool Helpers::registerHotkeys() {
+bool Skypush::registerHotkeys() {
      return registerAreaHotkey()&registerWindowHotkey()&registerEverythingHotkey();
 }
 
-bool Helpers::registerAreaHotkey()
+bool Skypush::registerAreaHotkey()
 {
     areaHotkey->setShortcut(QKeySequence("ctrl+alt+4"), true);
 
@@ -26,7 +27,7 @@ bool Helpers::registerAreaHotkey()
     return areaHotkey->isRegistered();
 }
 
-bool Helpers::registerWindowHotkey()
+bool Skypush::registerWindowHotkey()
 {
     windowHotkey->setShortcut(QKeySequence("ctrl+alt+3"), true);
 
@@ -37,7 +38,7 @@ bool Helpers::registerWindowHotkey()
     return windowHotkey->isRegistered();
 }
 
-bool Helpers::registerEverythingHotkey()
+bool Skypush::registerEverythingHotkey()
 {
     everythingHotkey->setShortcut(QKeySequence("ctrl+alt+2"), true);
 

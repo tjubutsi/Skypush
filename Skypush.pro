@@ -27,12 +27,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    trayhandler.cpp \
-    helpers.cpp
+    skypush.cpp \
+    systemtray.cpp
 
 HEADERS += \
-    trayhandler.h \
-    helpers.h
+    skypush.h \
+    systemtray.h
 
 FORMS +=
 

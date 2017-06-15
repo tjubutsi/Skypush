@@ -1,14 +1,14 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef SKYPUSH_H
+#define SKYPUSH_H
 
 #include <QObject>
 #include <QHotkey>
 
-class Helpers : public QObject
+class Skypush : public QObject
 {
     Q_OBJECT
     public:
-        explicit Helpers(QObject *parent = nullptr);
+        explicit Skypush(QObject *parent = nullptr);
 
         QHotkey *areaHotkey;
         QHotkey *windowHotkey;
@@ -25,4 +25,4 @@ class Helpers : public QObject
         bool registerEverythingHotkey();
 };
 
-#endif // HELPERS_H
+#endif // SKYPUSH_H

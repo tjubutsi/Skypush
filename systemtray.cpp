@@ -1,17 +1,17 @@
-#include "trayhandler.h"
-#include "helpers.h"
+#include "systemtray.h"
 #include <QApplication>
 #include <QSystemTrayIcon>
 #include <QDebug>
 #include <QMenu>
+#include <QObject>
 
-TrayHandler::TrayHandler(QObject *parent) : QObject(parent)
+SystemTray::SystemTray(QObject *parent) : QObject(parent)
 {
     createTrayIcon();
     createContextMenu();
 }
 
-void TrayHandler::createTrayIcon()
+void SystemTray::createTrayIcon()
 {
     trayIcon = new QSystemTrayIcon();
     if (trayIcon->isSystemTrayAvailable()) //TODO: settings verification too
@@ -20,10 +20,10 @@ void TrayHandler::createTrayIcon()
         trayIcon->show();
     }
 
-    connect(trayIcon, &QSystemTrayIcon::activated, this, &TrayHandler::trayActivate);
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &SystemTray::trayActivate);
 }
 
-void TrayHandler::createContextMenu()
+void SystemTray::createContextMenu()
 {
     trayMenu = new QMenu();
 
@@ -39,7 +39,7 @@ void TrayHandler::createContextMenu()
     trayIcon->setContextMenu(trayMenu);
 }
 
-void TrayHandler::trayActivate(QSystemTrayIcon::ActivationReason reason)
+void SystemTray::trayActivate(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason) {
         case QSystemTrayIcon::Trigger: {
@@ -57,12 +57,12 @@ void TrayHandler::trayActivate(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void TrayHandler::openSettings()
+void SystemTray::openSettings()
 {
     qDebug() << "Opened settings window";
 }
 
-void TrayHandler::exit()
+void SystemTray::exit()
 {
     trayIcon->hide();
     qApp->quit();
