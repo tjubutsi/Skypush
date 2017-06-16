@@ -21,7 +21,7 @@ void SystemTray::createTrayIcon()
     trayIcon = new QSystemTrayIcon();
     if (trayIcon->isSystemTrayAvailable()) //TODO: settings verification too
     {
-        trayIcon->setIcon(QIcon("://icon.png"));
+        trayIcon->setIcon(QIcon("://images/icon.png"));
         trayIcon->show();
     }
 

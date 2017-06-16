@@ -8,18 +8,16 @@
 #include <QScreen>
 #include <QBuffer>
 #include <QtNetwork>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QHttpMultiPart>
-#include <QUrl>
 #include <QClipboard>
 
 Skypush::Skypush(QObject *parent) :
     QObject(parent),
     areaHotkey(new QHotkey(this)),
     windowHotkey(new QHotkey(this)),
-    everythingHotkey(new QHotkey(this))
+    everythingHotkey(new QHotkey(this)),
+    systemTray(new SystemTray(this))
 {
+    manager = new QNetworkAccessManager(this);
 }
 
 bool Skypush::registerHotkeys() {
@@ -83,22 +81,35 @@ QByteArray Skypush::convertToByteArray(QPixmap ScreenGrab)
 
 void Skypush::upload(QByteArray ByteArray)
 {
-    QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+    systemTray->trayIcon->setToolTip("Skypush - Uploading...");
 
     QHttpPart imagePart;
     imagePart.setBody(ByteArray);
     imagePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"data\"; filename=\"tmp_name\""));
 
+    QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->append(imagePart);
 
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    manager->post(QNetworkRequest(QUrl("https://skyweb.nu/api/upload.php")), multiPart);
+    QNetworkReply* reply = manager->post(QNetworkRequest(QUrl("https://skyweb.nu/api/upload.php")), multiPart);
+    connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }
 
-void Skypush::replyFinished(QNetworkReply *reply)
+void Skypush::replyFinished()
 {
-    QByteArray content= reply->readAll();
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(content);
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        QByteArray content= reply->readAll();
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(content);
+        systemTray->trayIcon->showMessage("Success", content, QSystemTrayIcon::NoIcon, 5000);
+    }
+    else
+    {
+        systemTray->trayIcon->showMessage("Success", reply->errorString(), QSystemTrayIcon::Critical, 5000);
+    }
+
+    systemTray->trayIcon->setToolTip("Skypush");
+    reply->deleteLater();
 }

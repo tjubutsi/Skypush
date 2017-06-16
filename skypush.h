@@ -5,6 +5,7 @@
 #include <QHotkey>
 #include <QPixmap>
 #include <QNetworkReply>
+#include "systemtray.h"
 
 class Skypush : public QObject
 {
@@ -16,6 +17,8 @@ class Skypush : public QObject
         QHotkey *windowHotkey;
         QHotkey *everythingHotkey;
 
+        SystemTray *systemTray;
+
     private:
         QNetworkAccessManager *manager;
 
@@ -26,7 +29,7 @@ class Skypush : public QObject
         bool registerAreaHotkey();
         bool registerWindowHotkey();
         bool registerEverythingHotkey();
-        void replyFinished(QNetworkReply* reply);
+        void replyFinished();
 
     private slots:
         void grabEverything();

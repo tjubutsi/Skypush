@@ -13,11 +13,12 @@ class SystemTray : public QObject
         explicit SystemTray(QObject *parent = nullptr);
         ~SystemTray();
 
-    private:
         QMenu *trayMenu;
         QSystemTrayIcon *trayIcon;
         QAction *quitAction;
         QAction *settingsAction;
+
+    private:
 
     private slots:
         void trayActivate(QSystemTrayIcon::ActivationReason reason);
