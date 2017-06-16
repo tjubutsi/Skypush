@@ -11,6 +11,11 @@ SystemTray::SystemTray(QObject *parent) : QObject(parent)
     createContextMenu();
 }
 
+SystemTray::~SystemTray()
+{
+    trayIcon->hide();
+}
+
 void SystemTray::createTrayIcon()
 {
     trayIcon = new QSystemTrayIcon();
@@ -64,6 +69,5 @@ void SystemTray::openSettings()
 
 void SystemTray::exit()
 {
-    trayIcon->hide();
     qApp->quit();
 }

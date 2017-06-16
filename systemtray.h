@@ -11,6 +11,7 @@ class SystemTray : public QObject
     Q_OBJECT
     public:
         explicit SystemTray(QObject *parent = nullptr);
+        ~SystemTray();
 
     private:
         QMenu *trayMenu;
