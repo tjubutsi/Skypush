@@ -5,18 +5,24 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QAction>
+#include <settings.h>
+
+class GUI;
+class Skypush;
 
 class SystemTray : public QObject
 {
     Q_OBJECT
     public:
-        explicit SystemTray(QObject *parent = nullptr);
+        explicit SystemTray(GUI *parent = nullptr);
         ~SystemTray();
 
         QMenu *trayMenu;
         QSystemTrayIcon *trayIcon;
         QAction *quitAction;
         QAction *settingsAction;
+        Settings *settings;
+        GUI *gui;
 
     private:
 

@@ -1,12 +1,15 @@
 #include "systemtray.h"
+#include "gui.h"
 #include <QApplication>
 #include <QSystemTrayIcon>
 #include <QDebug>
 #include <QMenu>
 #include <QObject>
+#include <settings.h>
 
-SystemTray::SystemTray(QObject *parent) : QObject(parent)
+SystemTray::SystemTray(GUI *parent)
 {
+    gui = parent;
     createTrayIcon();
     createContextMenu();
 }
@@ -64,7 +67,8 @@ void SystemTray::trayActivate(QSystemTrayIcon::ActivationReason reason)
 
 void SystemTray::openSettings()
 {
-    qDebug() << "Opened settings window";
+    settings = new Settings(this);
+    settings->show();
 }
 
 void SystemTray::exit()

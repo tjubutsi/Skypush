@@ -2,40 +2,34 @@
 #define SKYPUSH_H
 
 #include <QObject>
-#include <QHotkey>
 #include <QPixmap>
 #include <QNetworkReply>
-#include "systemtray.h"
+#include <QRubberBand>
+
+class AreaWindow;
+class GUI;
 
 class Skypush : public QObject
 {
     Q_OBJECT
     public:
         explicit Skypush(QObject *parent = nullptr);
-
-        QHotkey *areaHotkey;
-        QHotkey *windowHotkey;
-        QHotkey *everythingHotkey;
-
-        SystemTray *systemTray;
-
-    private:
+        GUI *gui;
         QNetworkAccessManager *manager;
+        AreaWindow *areaWindow;
 
     signals:
 
     public slots:
-        bool registerHotkeys();
-        bool registerAreaHotkey();
-        bool registerWindowHotkey();
-        bool registerEverythingHotkey();
-        void replyFinished();
-
-    private slots:
-        void grabEverything();
         QPixmap getAllMonitorsPixmap();
+        QPixmap getAreaPixmap(QRect rect);
+        void grabAreaAndUpload(QRect rect);
         QByteArray convertToByteArray(QPixmap ScreenGrab);
         void upload(QByteArray ByteArray);
+        void replyFinished();
+        void grabArea();
+        void grabWindow();
+        void grabEverything();
 };
 
 #endif // SKYPUSH_H

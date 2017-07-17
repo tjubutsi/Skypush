@@ -1,72 +1,60 @@
 #include "skypush.h"
 #include "systemtray.h"
+#include "gui.h"
+#include "areawindow.h"
 #include <QHotkey>
 #include <QApplication>
-#include <QDebug>
 #include <QDesktopWidget>
+#include <QDebug>
 #include <QPixmap>
 #include <QScreen>
 #include <QBuffer>
 #include <QtNetwork>
 #include <QClipboard>
+#if defined(Q_OS_WIN)
+    #include "windows.h"
+    #include "dwmapi.h"
+#endif
 
 Skypush::Skypush(QObject *parent) :
-    QObject(parent),
-    areaHotkey(new QHotkey(this)),
-    windowHotkey(new QHotkey(this)),
-    everythingHotkey(new QHotkey(this)),
-    systemTray(new SystemTray(this))
+    QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
-}
-
-bool Skypush::registerHotkeys() {
-     return registerAreaHotkey()&registerWindowHotkey()&registerEverythingHotkey();
-}
-
-bool Skypush::registerAreaHotkey()
-{
-    areaHotkey->setShortcut(QKeySequence("ctrl+alt+4"), true);
-
-    QObject::connect(areaHotkey, &QHotkey::activated, qApp, [&](){
-        qDebug() << "Area hotkey pressed";
-    });
-
-    return areaHotkey->isRegistered();
-}
-
-bool Skypush::registerWindowHotkey()
-{
-    windowHotkey->setShortcut(QKeySequence("ctrl+alt+3"), true);
-
-    QObject::connect(windowHotkey, &QHotkey::activated, qApp, [&](){
-        qDebug() << "Window hotkey pressed";
-    });
-
-    return windowHotkey->isRegistered();
-}
-
-bool Skypush::registerEverythingHotkey()
-{
-    everythingHotkey->setShortcut(QKeySequence("ctrl+alt+2"), true);
-
-    QObject::connect(everythingHotkey, &QHotkey::activated, this, &Skypush::grabEverything);
-
-    return everythingHotkey->isRegistered();
-}
-
-void Skypush::grabEverything()
-{
-    QPixmap screengrab = getAllMonitorsPixmap();
-    QByteArray byteArray = convertToByteArray(screengrab);
-    upload(byteArray);
+    gui = new GUI(this);
+    if (!gui->registerHotkeys())
+    {
+        qDebug() << "registering failed";
+        qApp->quit();
+    }
 }
 
 QPixmap Skypush::getAllMonitorsPixmap()
 {
-    QDesktopWidget *desktop = QApplication::desktop();
-    QScreen *screen = QApplication::primaryScreen();
-    return screen->grabWindow(desktop->winId(), 0, 0, desktop->width(), desktop->height());
+    QList<QScreen *> screens = QGuiApplication::screens();
+    QScreen *topleft = QApplication::primaryScreen();
+    QRect rect;
+    foreach (auto screen, screens) {
+        rect = rect.united(screen->geometry());
+        if (topleft->geometry().x() > screen->geometry().x() || topleft->geometry().y() > screen->geometry().y())
+        {
+            topleft = screen;
+        }
+    }
+    qDebug() << rect;
+    return topleft->grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+QPixmap Skypush::getAreaPixmap(QRect rect)
+{
+    QPixmap full = getAllMonitorsPixmap();
+    return full.copy(rect);
+}
+
+void Skypush::grabAreaAndUpload(QRect rect)
+{
+    QPixmap screengrab = getAreaPixmap(rect);
+    QByteArray byteArray = convertToByteArray(screengrab);
+    upload(byteArray);
 }
 
 QByteArray Skypush::convertToByteArray(QPixmap ScreenGrab)
@@ -81,7 +69,7 @@ QByteArray Skypush::convertToByteArray(QPixmap ScreenGrab)
 
 void Skypush::upload(QByteArray ByteArray)
 {
-    systemTray->trayIcon->setToolTip("Skypush - Uploading...");
+    gui->systemTray->trayIcon->setToolTip("Skypush - Uploading...");
 
     QHttpPart imagePart;
     imagePart.setBody(ByteArray);
@@ -97,19 +85,73 @@ void Skypush::upload(QByteArray ByteArray)
 void Skypush::replyFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    QByteArray content= reply->readAll();
 
     if (reply->error() == QNetworkReply::NoError)
     {
-        QByteArray content= reply->readAll();
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(content);
-        systemTray->trayIcon->showMessage("Success", content, QSystemTrayIcon::NoIcon, 5000);
+        gui->systemTray->trayIcon->showMessage("Success", content, QSystemTrayIcon::NoIcon, 5000);
     }
     else
     {
-        systemTray->trayIcon->showMessage("Success", reply->errorString(), QSystemTrayIcon::Critical, 5000);
+        gui->systemTray->trayIcon->showMessage("Failed", content, QSystemTrayIcon::Critical, 5000);
     }
 
-    systemTray->trayIcon->setToolTip("Skypush");
+    gui->systemTray->trayIcon->setToolTip("Skypush");
     reply->deleteLater();
+}
+
+void Skypush::grabArea()
+{
+    QScreen *screen = QApplication::primaryScreen();
+    QRect rect = screen->virtualGeometry();
+    areaWindow = new AreaWindow(rect, this);
+    areaWindow->show();
+}
+
+void Skypush::grabWindow()
+{
+    #if defined(Q_OS_WIN)
+        HWND window = GetForegroundWindow();
+        RECT r;
+        ::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &r, sizeof(r));
+        //if (IsZoomed(window))
+        //{
+        //    r.bottom -= 8;
+        //    r.top += 8;
+        //    r.left += 8;
+        //    r.right -= 8;
+        //}
+        //else
+        //{
+        //    r.bottom -= 7;
+        //    r.left += 7;
+        //    r.right -= 7;
+        //}
+        QRect rect = QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
+        grabAreaAndUpload(rect);
+    #elif defined(Q_OS_LINUX)
+        //Window focus;
+        //int revert;
+        //
+        //XGetInputFocus(QX11Info::display(), &focus, &revert);
+        //XGetWindowAttributes(QX11Info::display(), focus, &attr);
+
+
+
+        //QRect rect = QRect(attributes.x, attributes.y, attributes.width, attributes.height);
+        //grabAreaAndUpload(rect);
+        //QScreen *screen = QGuiApplication::primaryScreen();
+        //QPixmap screengrab = screen->grabWindow(window);
+        //QByteArray byteArray = convertToByteArray(screengrab);
+        //upload(byteArray);
+    #endif
+}
+
+void Skypush::grabEverything()
+{
+    QPixmap screengrab = getAllMonitorsPixmap();
+    QByteArray byteArray = convertToByteArray(screengrab);
+    upload(byteArray);
 }

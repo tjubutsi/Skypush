@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Skypush
 TEMPLATE = app
 
-include(../vendor/vendor.pri)
+include(../QHotkey/qhotkey.pri)
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -27,15 +27,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     skypush.cpp \
-    systemtray.cpp
+    systemtray.cpp \
+    areawindow.cpp \
+    settings.cpp \
+    gui.cpp
 
 HEADERS += \
     skypush.h \
-    systemtray.h
+    systemtray.h \
+    areawindow.h \
+    settings.h \
+    gui.h
 
-FORMS +=
+FORMS += \
+    settings.ui
 
 RESOURCES += \
     res.qrc
 
 RC_FILE = skypush.rc
+
+#LIBS += Dwmapi.lib
