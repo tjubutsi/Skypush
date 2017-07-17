@@ -41,7 +41,7 @@ void AreaWindow::mouseReleaseEvent(QMouseEvent *event)
     #ifdef Q_OS_WIN
         //no sleep needed
     #else
-        struct timespec ts = { 200 / 1000, (200 % 1000) * 1000 * 1000 }; //fuck linux
+        struct timespec ts = { 200 / 1000, (200 % 1000) * 1000 * 1000 };
         nanosleep(&ts, NULL);
     #endif
     skypush->grabAreaAndUpload(rect);
