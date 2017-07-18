@@ -2,6 +2,7 @@
 #define SETTINGS_H
 
 #include <QDialog>
+#include <QNetworkReply>
 
 class SystemTray;
 class GUI;
@@ -26,6 +27,9 @@ class Settings : public QDialog
         void on_editEverythingHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void on_buttonBox_accepted();
         void checkSettings();
+        void tokenReplyFinished();
+        void getNewToken();
+        void on_regenerateTokenButton_clicked();
 
 private:
         Ui::Settings *ui;

@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>381</width>
-    <height>143</height>
+    <width>380</width>
+    <height>180</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Skypush - Settings</string>
@@ -16,10 +22,10 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>100</y>
-     <width>341</width>
-     <height>32</height>
+     <x>200</x>
+     <y>130</y>
+     <width>161</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="orientation">
@@ -35,7 +41,7 @@
      <x>20</x>
      <y>20</y>
      <width>341</width>
-     <height>74</height>
+     <height>101</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -52,6 +58,9 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QKeySequenceEdit" name="editAreaHotkey"/>
+    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_2">
       <property name="text">
@@ -61,6 +70,9 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QKeySequenceEdit" name="editWindowHotkey"/>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_3">
@@ -72,32 +84,43 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QKeySequenceEdit" name="editAreaHotkey"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QKeySequenceEdit" name="editWindowHotkey"/>
-    </item>
     <item row="2" column="1">
      <widget class="QKeySequenceEdit" name="editEverythingHotkey"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>API token:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="tokenLineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>130</y>
+     <width>77</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="regenerateTokenButton">
+      <property name="text">
+       <string>New token</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>

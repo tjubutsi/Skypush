@@ -30,14 +30,16 @@ SOURCES += \
     systemtray.cpp \
     areawindow.cpp \
     settings.cpp \
-    gui.cpp
+    gui.cpp \
+    settingsmanager.cpp
 
 HEADERS += \
     skypush.h \
     systemtray.h \
     areawindow.h \
     settings.h \
-    gui.h
+    gui.h \
+    settingsmanager.h
 
 FORMS += \
     settings.ui
@@ -47,4 +49,6 @@ RESOURCES += \
 
 RC_FILE = skypush.rc
 
-#LIBS += Dwmapi.lib
+win32 {
+    LIBS += Dwmapi.lib
+}

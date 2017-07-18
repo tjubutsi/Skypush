@@ -1,6 +1,7 @@
 #include "gui.h"
 #include "skypush.h"
 #include "systemtray.h"
+#include "settingsmanager.h"
 #include <QHotkey>
 #include <QApplication>
 #include <QSettings>
@@ -16,22 +17,12 @@ GUI::GUI(Skypush *parent)
 }
 
 bool GUI::registerHotkeys() {
-    bool registered = true;
-    settings = new QSettings();
-    settings->beginGroup("Shortcuts");
-    registered = registerAreaHotkey()&registerWindowHotkey()&registerEverythingHotkey();
-    settings->endGroup();
-
-    return registered;
+    return registerAreaHotkey()&registerWindowHotkey()&registerEverythingHotkey();
 }
 
 bool GUI::registerAreaHotkey()
 {
-    QString keys = "ctrl+alt+4";
-    if (settings->contains("AreaShortcut"))
-    {
-        keys = settings->value("AreaShortcut").toString();
-    }
+    QString keys = SettingsManager::getOrCreateWithDefault("Shortcuts", "AreaShortcut", "ctrl+shift+4").toString();
     areaHotkey->setShortcut(QKeySequence(keys), true);
 
     QObject::connect(areaHotkey, &QHotkey::activated, qApp, [&](){
@@ -43,11 +34,7 @@ bool GUI::registerAreaHotkey()
 
 bool GUI::registerWindowHotkey()
 {
-    QString keys = "ctrl+alt+3";
-    if (settings->contains("WindowShortcut"))
-    {
-        keys = settings->value("WindowShortcut").toString();
-    }
+    QString keys = SettingsManager::getOrCreateWithDefault("Shortcuts", "WindowShortcut", "ctrl+shift+3").toString();
     windowHotkey->setShortcut(QKeySequence(keys), true);
 
     QObject::connect(windowHotkey, &QHotkey::activated, qApp, [&](){
@@ -59,11 +46,7 @@ bool GUI::registerWindowHotkey()
 
 bool GUI::registerEverythingHotkey()
 {
-    QString keys = "ctrl+alt+2";
-    if (settings->contains("EverythingShortcut"))
-    {
-        keys = settings->value("EverythingShortcut").toString();
-    }
+    QString keys = SettingsManager::getOrCreateWithDefault("Shortcuts", "EverythingShortcut", "ctrl+shift+2").toString();
     everythingHotkey->setShortcut(QKeySequence(keys), true);
 
     QObject::connect(everythingHotkey, &QHotkey::activated, qApp, [&](){

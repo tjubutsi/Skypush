@@ -5,6 +5,8 @@
 #include <QPixmap>
 #include <QNetworkReply>
 #include <QRubberBand>
+#include <QJsonObject>
+#include <QSettings>
 
 class AreaWindow;
 class GUI;
@@ -17,6 +19,8 @@ class Skypush : public QObject
         GUI *gui;
         QNetworkAccessManager *manager;
         AreaWindow *areaWindow;
+        QSettings *settings;
+        QString token;
 
     signals:
 
@@ -27,9 +31,12 @@ class Skypush : public QObject
         QByteArray convertToByteArray(QPixmap ScreenGrab);
         void upload(QByteArray ByteArray);
         void replyFinished();
+        void tokenReplyFinished();
         void grabArea();
         void grabWindow();
         void grabEverything();
+        static QJsonObject jsonToObject(QByteArray bytes);
+        void getNewToken();
 };
 
 #endif // SKYPUSH_H

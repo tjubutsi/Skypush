@@ -2,6 +2,7 @@
 #include "systemtray.h"
 #include "gui.h"
 #include "areawindow.h"
+#include "settingsmanager.h"
 #include <QHotkey>
 #include <QApplication>
 #include <QDesktopWidget>
@@ -25,6 +26,14 @@ Skypush::Skypush(QObject *parent) :
     {
         qDebug() << "registering failed";
         qApp->quit();
+    }
+    if (SettingsManager::propertyExists("Program", "token"))
+    {
+        token = SettingsManager::getValue("Program", "token").toString();
+    }
+    else
+    {
+        getNewToken();
     }
 }
 
@@ -80,24 +89,27 @@ void Skypush::upload(QByteArray ByteArray)
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->append(imagePart);
 
-    QNetworkReply* reply = manager->post(QNetworkRequest(QUrl("https://skyweb.nu/api/upload.php")), multiPart);
+    QNetworkRequest request(QUrl("https://skyweb.nu/api2/upload.php"));
+    request.setRawHeader("token", token.toUtf8());
+    QNetworkReply* reply = manager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }
 
 void Skypush::replyFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QByteArray content= reply->readAll();
+    QJsonObject result = jsonToObject(reply->readAll());
+    QString message = result["message"].toString();
 
     if (reply->error() == QNetworkReply::NoError)
     {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(content);
-        gui->systemTray->trayIcon->showMessage("Success", content, QSystemTrayIcon::NoIcon, 5000);
+        clipboard->setText(message);
+        gui->systemTray->trayIcon->showMessage("Success", message, QSystemTrayIcon::Information, 5000);
     }
     else
     {
-        gui->systemTray->trayIcon->showMessage("Failed", content, QSystemTrayIcon::Critical, 5000);
+        gui->systemTray->trayIcon->showMessage("Failed", message, QSystemTrayIcon::Critical, 5000);
     }
 
     gui->systemTray->trayIcon->setToolTip("Skypush");
@@ -121,20 +133,6 @@ void Skypush::grabWindow()
         QRect rect = QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
         grabAreaAndUpload(rect);
     #elif defined(Q_OS_LINUX)
-        //Window focus;
-        //int revert;
-        //
-        //XGetInputFocus(QX11Info::display(), &focus, &revert);
-        //XGetWindowAttributes(QX11Info::display(), focus, &attr);
-
-
-
-        //QRect rect = QRect(attributes.x, attributes.y, attributes.width, attributes.height);
-        //grabAreaAndUpload(rect);
-        //QScreen *screen = QGuiApplication::primaryScreen();
-        //QPixmap screengrab = screen->grabWindow(window);
-        //QByteArray byteArray = convertToByteArray(screengrab);
-        //upload(byteArray);
     #endif
 }
 
@@ -143,4 +141,35 @@ void Skypush::grabEverything()
     QPixmap screengrab = getAllMonitorsPixmap();
     QByteArray byteArray = convertToByteArray(screengrab);
     upload(byteArray);
+}
+
+QJsonObject Skypush::jsonToObject(QByteArray bytes)
+{
+    QJsonDocument jsonDocument(QJsonDocument::fromJson(bytes));
+    return jsonDocument.object();
+}
+
+void Skypush::getNewToken()
+{
+    QNetworkRequest request(QUrl("https://skyweb.nu/api2/init.php"));
+    QNetworkReply* reply = manager->get(request);
+    connect(reply, SIGNAL(finished()), this, SLOT(tokenReplyFinished()));
+}
+
+void Skypush::tokenReplyFinished()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    QJsonObject result = jsonToObject(reply->readAll());
+    QString message = result["message"].toString();
+
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        SettingsManager::setValue("program", "token", message);
+    }
+    else
+    {
+        gui->systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
+    }
+
+    reply->deleteLater();
 }
