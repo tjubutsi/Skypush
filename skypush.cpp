@@ -35,12 +35,14 @@ QPixmap Skypush::getAllMonitorsPixmap()
     QRect rect;
     foreach (auto screen, screens) {
         rect = rect.united(screen->geometry());
-        if (topleft->geometry().x() > screen->geometry().x() || topleft->geometry().y() > screen->geometry().y())
-        {
-            topleft = screen;
-        }
+        #if defined(Q_OS_LINUX)
+            if (topleft->geometry().x() > screen->geometry().x() || topleft->geometry().y() > screen->geometry().y())
+            {
+                topleft = screen;
+            }
+        #endif
     }
-    qDebug() << rect;
+    qDebug() << topleft->geometry();
     return topleft->grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height());
 }
 
@@ -116,19 +118,6 @@ void Skypush::grabWindow()
         HWND window = GetForegroundWindow();
         RECT r;
         ::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &r, sizeof(r));
-        //if (IsZoomed(window))
-        //{
-        //    r.bottom -= 8;
-        //    r.top += 8;
-        //    r.left += 8;
-        //    r.right -= 8;
-        //}
-        //else
-        //{
-        //    r.bottom -= 7;
-        //    r.left += 7;
-        //    r.right -= 7;
-        //}
         QRect rect = QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
         grabAreaAndUpload(rect);
     #elif defined(Q_OS_LINUX)
