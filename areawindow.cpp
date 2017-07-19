@@ -4,7 +4,8 @@
 #include <QRect>
 #include <QRubberBand>
 
-AreaWindow::AreaWindow(QRect rect, Skypush *parent)
+AreaWindow::AreaWindow(QRect rect, Skypush *parent) :
+    rubberBand(new QRubberBand(QRubberBand::Rectangle, this))
 {
     skypush = parent;
     setWindowFlags(Qt::Widget | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::SubWindow | Qt::X11BypassWindowManagerHint);
@@ -34,6 +35,8 @@ void AreaWindow::mouseMoveEvent(QMouseEvent *event)
 
 void AreaWindow::mouseReleaseEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
+
     rubberBand->hide();
     this->hide();
     QRect rect = QRect(rubberBand->x(), rubberBand->y(), rubberBand->width(), rubberBand->height());

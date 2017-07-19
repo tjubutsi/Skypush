@@ -23,7 +23,7 @@ class AreaWindow : public QWidget
 
     private:
         QPoint origin;
-        QRubberBand *rubberBand {rubberBand = NULL};
+        QRubberBand *rubberBand;
 };
 
 #endif // AREAWINDOW_H

@@ -80,7 +80,6 @@ QPixmap Skypush::getAllMonitorsPixmap()
 {
     QScreen *screen = QApplication::primaryScreen();
     QDesktopWidget* dw = QApplication::desktop();
-    qDebug() << dw->winId();
     return screen->grabWindow(dw->winId(), 0, 0, dw->width(), dw->height());
 }
 
