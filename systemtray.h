@@ -1,14 +1,13 @@
 #ifndef SYSTEMTRAY_H
 #define SYSTEMTRAY_H
 
+#include <QAction>
+#include <QMenu>
 #include <QObject>
 #include <QSystemTrayIcon>
-#include <QMenu>
-#include <QAction>
-#include <settings.h>
 
 class GUI;
-class Skypush;
+class Settings;
 
 class SystemTray : public QObject
 {
@@ -17,20 +16,21 @@ class SystemTray : public QObject
         explicit SystemTray(GUI *parent = nullptr);
         ~SystemTray();
 
+        //external
+        GUI *gui;
+        Settings *settings;
+
         QMenu *trayMenu;
         QSystemTrayIcon *trayIcon;
         QAction *quitAction;
         QAction *settingsAction;
-        Settings *settings;
-        GUI *gui;
-
     private:
 
     private slots:
+        void createTrayIcon();
+        void createContextMenu();
         void trayActivate(QSystemTrayIcon::ActivationReason reason);
         void openSettings();
-        void createContextMenu();
-        void createTrayIcon();
         void exit();
 };
 

@@ -1,7 +1,6 @@
 #ifndef AREAWINDOW_H
 #define AREAWINDOW_H
 
-#include <QDialog>
 #include <QRubberBand>
 
 class Skypush;
@@ -12,13 +11,19 @@ class AreaWindow : public QWidget
 
     public:
         AreaWindow(QRect rect, Skypush *parent = nullptr);
+
+        //external
         Skypush *skypush;
+
+    public slots:
         void mousePressEvent(QMouseEvent *event);
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void keyPressEvent(QKeyEvent *event);
-        QRubberBand *rubberBand {rubberBand = NULL};
+
+    private:
         QPoint origin;
+        QRubberBand *rubberBand {rubberBand = NULL};
 };
 
 #endif // AREAWINDOW_H

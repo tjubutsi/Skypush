@@ -3,9 +3,10 @@
 
 #include <QDialog>
 #include <QNetworkReply>
+#include <QSettings>
 
-class SystemTray;
 class GUI;
+class SystemTray;
 
 namespace Ui {
     class Settings;
@@ -18,20 +19,24 @@ class Settings : public QDialog
     public:
         explicit Settings(SystemTray *parent = nullptr);
         ~Settings();
-        SystemTray *systemTray;
+
+        QSettings *settingsManager;
+
+        //external
         GUI *gui;
+        SystemTray *systemTray;
 
     private slots:
         void on_editAreaHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void on_editWindowHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void on_editEverythingHotkey_keySequenceChanged(const QKeySequence &keySequence);
-        void on_buttonBox_accepted();
         void checkSettings();
-        void tokenReplyFinished();
-        void getNewToken();
         void on_regenerateTokenButton_clicked();
+        void getNewToken();
+        void tokenReplyFinished();
+        void on_buttonBox_accepted();
 
-private:
+    private:
         Ui::Settings *ui;
 };
 

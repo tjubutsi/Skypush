@@ -27,19 +27,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     skypush.cpp \
-    systemtray.cpp \
-    areawindow.cpp \
-    settings.cpp \
     gui.cpp \
-    settingsmanager.cpp
+    settings.cpp \
+    systemtray.cpp \
+    areawindow.cpp
 
 HEADERS += \
     skypush.h \
-    systemtray.h \
-    areawindow.h \
-    settings.h \
     gui.h \
-    settingsmanager.h
+    settings.h \
+    systemtray.h \
+    areawindow.h
 
 FORMS += \
     settings.ui

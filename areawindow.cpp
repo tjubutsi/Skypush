@@ -1,9 +1,8 @@
-#include <QtWidgets>
-#include <QRubberBand>
-#include <QRect>
-#include <QPalette>
-#include "areawindow.h"
 #include "skypush.h"
+#include "areawindow.h"
+#include <QtWidgets>
+#include <QRect>
+#include <QRubberBand>
 
 AreaWindow::AreaWindow(QRect rect, Skypush *parent)
 {

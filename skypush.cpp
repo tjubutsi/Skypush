@@ -1,35 +1,34 @@
 #include "skypush.h"
-#include "systemtray.h"
 #include "gui.h"
+#include "systemtray.h"
 #include "areawindow.h"
-#include "settingsmanager.h"
-#include <QHotkey>
 #include <QApplication>
-#include <QDesktopWidget>
-#include <QDebug>
-#include <QPixmap>
-#include <QScreen>
 #include <QBuffer>
-#include <QtNetwork>
 #include <QClipboard>
+#include <QDesktopWidget>
+#include <QHttpMultiPart>
+#include <QJsonDocument>
+#include <QNetworkReply>
+#include <QScreen>
 #if defined(Q_OS_WIN)
     #include "windows.h"
     #include "dwmapi.h"
 #endif
 
 Skypush::Skypush(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    settingsManager(new QSettings())
 {
-    manager = new QNetworkAccessManager(this);
+    networkManager = new QNetworkAccessManager(this);
     gui = new GUI(this);
     if (!gui->registerHotkeys())
     {
-        qDebug() << "registering failed";
+        qDebug() << "registering failed"; //show message and settings
         qApp->quit();
     }
-    if (SettingsManager::propertyExists("Program", "token"))
+    if (settingsManager->contains("program/token"))
     {
-        token = SettingsManager::getValue("Program", "token").toString();
+        token = settingsManager->value("program/token").toString();
     }
     else
     {
@@ -37,28 +36,30 @@ Skypush::Skypush(QObject *parent) :
     }
 }
 
-QPixmap Skypush::getAllMonitorsPixmap()
+QJsonObject Skypush::jsonToObject(QByteArray bytes)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    QScreen *topleft = QApplication::primaryScreen();
-    QRect rect;
-    foreach (auto screen, screens) {
-        rect = rect.united(screen->geometry());
-        #if defined(Q_OS_LINUX)
-            if (topleft->geometry().x() > screen->geometry().x() || topleft->geometry().y() > screen->geometry().y())
-            {
-                topleft = screen;
-            }
-        #endif
-    }
-    qDebug() << topleft->geometry();
-    return topleft->grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height());
+    QJsonDocument jsonDocument(QJsonDocument::fromJson(bytes));
+    return jsonDocument.object();
 }
 
-QPixmap Skypush::getAreaPixmap(QRect rect)
+void Skypush::grabArea()
 {
-    QPixmap full = getAllMonitorsPixmap();
-    return full.copy(rect);
+    QScreen *screen = QApplication::primaryScreen();
+    QRect rect = screen->virtualGeometry();
+    areaWindow = new AreaWindow(rect, this);
+    areaWindow->show();
+}
+
+void Skypush::grabWindow()
+{
+    #if defined(Q_OS_WIN)
+        HWND window = GetForegroundWindow();
+        RECT r;
+        ::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &r, sizeof(r));
+        QRect rect = QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
+        grabAreaAndUpload(rect);
+    #elif defined(Q_OS_LINUX)
+    #endif
 }
 
 void Skypush::grabAreaAndUpload(QRect rect)
@@ -66,6 +67,27 @@ void Skypush::grabAreaAndUpload(QRect rect)
     QPixmap screengrab = getAreaPixmap(rect);
     QByteArray byteArray = convertToByteArray(screengrab);
     upload(byteArray);
+}
+
+void Skypush::grabEverything()
+{
+    QPixmap screengrab = getAllMonitorsPixmap();
+    QByteArray byteArray = convertToByteArray(screengrab);
+    upload(byteArray);
+}
+
+QPixmap Skypush::getAllMonitorsPixmap()
+{
+    QScreen *screen = QApplication::primaryScreen();
+    QDesktopWidget* dw = QApplication::desktop();
+    qDebug() << dw->winId();
+    return screen->grabWindow(dw->winId(), 0, 0, dw->width(), dw->height());
+}
+
+QPixmap Skypush::getAreaPixmap(QRect rect)
+{
+    QPixmap full = getAllMonitorsPixmap();
+    return full.copy(rect);
 }
 
 QByteArray Skypush::convertToByteArray(QPixmap ScreenGrab)
@@ -91,7 +113,7 @@ void Skypush::upload(QByteArray ByteArray)
 
     QNetworkRequest request(QUrl("https://skyweb.nu/api2/upload.php"));
     request.setRawHeader("token", token.toUtf8());
-    QNetworkReply* reply = manager->post(request, multiPart);
+    QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }
 
@@ -116,58 +138,28 @@ void Skypush::replyFinished()
     reply->deleteLater();
 }
 
-void Skypush::grabArea()
-{
-    QScreen *screen = QApplication::primaryScreen();
-    QRect rect = screen->virtualGeometry();
-    areaWindow = new AreaWindow(rect, this);
-    areaWindow->show();
-}
-
-void Skypush::grabWindow()
-{
-    #if defined(Q_OS_WIN)
-        HWND window = GetForegroundWindow();
-        RECT r;
-        ::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &r, sizeof(r));
-        QRect rect = QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
-        grabAreaAndUpload(rect);
-    #elif defined(Q_OS_LINUX)
-    #endif
-}
-
-void Skypush::grabEverything()
-{
-    QPixmap screengrab = getAllMonitorsPixmap();
-    QByteArray byteArray = convertToByteArray(screengrab);
-    upload(byteArray);
-}
-
-QJsonObject Skypush::jsonToObject(QByteArray bytes)
-{
-    QJsonDocument jsonDocument(QJsonDocument::fromJson(bytes));
-    return jsonDocument.object();
-}
-
 void Skypush::getNewToken()
 {
     QNetworkRequest request(QUrl("https://skyweb.nu/api2/init.php"));
-    QNetworkReply* reply = manager->get(request);
+    QNetworkReply* reply = networkManager->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(tokenReplyFinished()));
 }
 
 void Skypush::tokenReplyFinished()
 {
+    qDebug() << "tokenreply";
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     QJsonObject result = jsonToObject(reply->readAll());
     QString message = result["message"].toString();
 
     if (reply->error() == QNetworkReply::NoError)
     {
-        SettingsManager::setValue("program", "token", message);
+        qDebug() << message;
+        settingsManager->setValue("program/token", message);
     }
     else
     {
+        qDebug() << reply->readAll();
         gui->systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
     }
 

@@ -1,8 +1,9 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include <QObject>
 #include <QHotkey>
+#include <QObject>
+#include <QSettings>
 
 class Skypush;
 class SystemTray;
@@ -13,11 +14,16 @@ class GUI : public QObject
 
     public:
         explicit GUI(Skypush *parent = nullptr);
+
+        QSettings *settingsManager;
+
+        //external
         Skypush *skypush;
+
+        SystemTray *systemTray;
         QHotkey *areaHotkey;
         QHotkey *windowHotkey;
         QHotkey *everythingHotkey;
-        SystemTray *systemTray;
 
     public slots:
         bool registerHotkeys();

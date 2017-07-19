@@ -1,11 +1,6 @@
 #include "systemtray.h"
-#include "gui.h"
+#include "settings.h"
 #include <QApplication>
-#include <QSystemTrayIcon>
-#include <QDebug>
-#include <QMenu>
-#include <QObject>
-#include <settings.h>
 
 SystemTray::SystemTray(GUI *parent)
 {

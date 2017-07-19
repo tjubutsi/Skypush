@@ -1,23 +1,21 @@
+#include "skypush.h"
+#include "gui.h"
+#include "systemtray.h"
 #include "settings.h"
 #include "ui_settings.h"
-#include "systemtray.h"
-#include "gui.h"
-#include "settingsmanager.h"
-#include "skypush.h"
 #include <QHotkey>
-#include <QDebug>
-#include <QPushButton>
-#include <QWidget>
 
 Settings::Settings(SystemTray *parent) :
-    ui(new Ui::Settings)
+    ui(new Ui::Settings),
+    settingsManager(new QSettings())
 {
     systemTray = parent;
+    gui = parent->gui;
     ui->setupUi(this);
-    ui->editAreaHotkey->setKeySequence(systemTray->gui->areaHotkey->shortcut());
-    ui->editWindowHotkey->setKeySequence(systemTray->gui->windowHotkey->shortcut());
-    ui->editEverythingHotkey->setKeySequence(systemTray->gui->everythingHotkey->shortcut());
-    ui->tokenLineEdit->setText(SettingsManager::getValue("program", "token").toString());
+    ui->editAreaHotkey->setKeySequence(gui->areaHotkey->shortcut());
+    ui->editWindowHotkey->setKeySequence(gui->windowHotkey->shortcut());
+    ui->editEverythingHotkey->setKeySequence(gui->everythingHotkey->shortcut());
+    ui->tokenLineEdit->setText(gui->skypush->token);
     connect(ui->editAreaHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editWindowHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editEverythingHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
@@ -52,27 +50,6 @@ void Settings::on_editEverythingHotkey_keySequenceChanged(const QKeySequence &ke
     }
 }
 
-void Settings::on_buttonBox_accepted()
-{
-    checkSettings();
-    if (!ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled())
-    {
-        return;
-    }
-    systemTray->gui->areaHotkey->setShortcut(ui->editAreaHotkey->keySequence()[0], false);
-    systemTray->gui->windowHotkey->setShortcut(ui->editWindowHotkey->keySequence()[0], false);
-    systemTray->gui->everythingHotkey->setShortcut(ui->editEverythingHotkey->keySequence()[0], false);
-    systemTray->gui->areaHotkey->setRegistered(true);
-    systemTray->gui->windowHotkey->setRegistered(true);
-    systemTray->gui->everythingHotkey->setRegistered(true);
-    systemTray->gui->skypush->token = ui->tokenLineEdit->text();
-    SettingsManager::setValue("program", "token", ui->tokenLineEdit->text());
-    SettingsManager::setValue("Shortcuts", "AreaShortcut", systemTray->gui->areaHotkey->shortcut());
-    SettingsManager::setValue("Shortcuts", "WindowShortcut", systemTray->gui->windowHotkey->shortcut());
-    SettingsManager::setValue("Shortcuts", "EverythingShortcut", systemTray->gui->everythingHotkey->shortcut());
-    accept();
-}
-
 void Settings::checkSettings()
 {
     if (ui->editAreaHotkey->keySequence().count() == 0 || ui->editWindowHotkey->keySequence().count() == 0 || ui->editEverythingHotkey->keySequence().count() == 0)
@@ -93,7 +70,7 @@ void Settings::on_regenerateTokenButton_clicked()
 void Settings::getNewToken()
 {
     QNetworkRequest request(QUrl("https://skyweb.nu/api2/init.php"));
-    QNetworkReply* reply = systemTray->gui->skypush->manager->get(request);
+    QNetworkReply* reply = systemTray->gui->skypush->networkManager->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(tokenReplyFinished()));
 }
 
@@ -113,4 +90,27 @@ void Settings::tokenReplyFinished()
     }
 
     reply->deleteLater();
+}
+
+void Settings::on_buttonBox_accepted()
+{
+    checkSettings();
+    if (!ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled())
+    {
+        return;
+    }
+    settingsManager->setValue("shortcuts/areaShortcut", ui->editAreaHotkey->keySequence()[0]);
+    settingsManager->setValue("shortcuts/windowShortcut", ui->editAreaHotkey->keySequence()[0]);
+    settingsManager->setValue("shortcuts/everythingShortcut", ui->editEverythingHotkey->keySequence()[0]);
+    settingsManager->setValue("program/token", ui->tokenLineEdit->text());
+
+    gui->areaHotkey->setShortcut(settingsManager->value("shortcuts/areaShortcut").toString(), false);
+    gui->areaHotkey->setRegistered(true);
+    gui->windowHotkey->setShortcut(settingsManager->value("shortcuts/windowShortcut").toString(), false);
+    gui->windowHotkey->setRegistered(true);
+    gui->everythingHotkey->setShortcut(settingsManager->value("shortcuts/everythingShortcut").toString(), false);
+    gui->everythingHotkey->setRegistered(true);
+
+    gui->skypush->token = settingsManager->value("program/token").toString();
+    accept();
 }
