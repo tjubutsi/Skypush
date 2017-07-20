@@ -5,6 +5,7 @@
 #include <QNetworkReply>
 #include <QSettings>
 
+class Skypush;
 class GUI;
 class SystemTray;
 
@@ -23,6 +24,7 @@ class Settings : public QDialog
         QSettings *settingsManager;
 
         //external
+        Skypush *skypush;
         GUI *gui;
         SystemTray *systemTray;
 
@@ -33,7 +35,9 @@ class Settings : public QDialog
         void checkSettings();
         void on_regenerateTokenButton_clicked();
         void getNewToken();
-        void tokenReplyFinished();
+        void getTokenReplyFinished();
+        void setNewToken();
+        void setTokenReplyFinished();
         void on_buttonBox_accepted();
 
     private:

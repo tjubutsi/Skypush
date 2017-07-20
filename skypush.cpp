@@ -23,7 +23,7 @@ Skypush::Skypush(QObject *parent) :
     gui = new GUI(this);
     if (!gui->registerHotkeys())
     {
-        qDebug() << "registering failed"; //show message and settings
+        qDebug() << "registering failed2"; //show message and settings
         qApp->quit();
     }
     if (settingsManager->contains("program/token"))
@@ -110,7 +110,7 @@ void Skypush::upload(QByteArray ByteArray)
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->append(imagePart);
 
-    QNetworkRequest request(QUrl("https://skyweb.nu/api2/upload.php"));
+    QNetworkRequest request(QUrl("https://skyweb.nu/api/upload.php"));
     request.setRawHeader("token", token.toUtf8());
     QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
@@ -139,26 +139,24 @@ void Skypush::replyFinished()
 
 void Skypush::getNewToken()
 {
-    QNetworkRequest request(QUrl("https://skyweb.nu/api2/init.php"));
+    QNetworkRequest request(QUrl("https://skyweb.nu/api/init.php"));
     QNetworkReply* reply = networkManager->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(tokenReplyFinished()));
 }
 
 void Skypush::tokenReplyFinished()
 {
-    qDebug() << "tokenreply";
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     QJsonObject result = jsonToObject(reply->readAll());
     QString message = result["message"].toString();
 
     if (reply->error() == QNetworkReply::NoError)
     {
-        qDebug() << message;
         settingsManager->setValue("program/token", message);
+        token = settingsManager->value("program/token").toString();
     }
     else
     {
-        qDebug() << reply->readAll();
         gui->systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
     }
 
