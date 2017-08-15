@@ -26,14 +26,6 @@ Skypush::Skypush(QObject *parent) :
         qDebug() << "registering failed2"; //show message and settings
         qApp->quit();
     }
-    if (settingsManager->contains("program/token"))
-    {
-        token = settingsManager->value("program/token").toString();
-    }
-    else
-    {
-        getNewToken();
-    }
 }
 
 QJsonObject Skypush::jsonToObject(QByteArray bytes)
@@ -111,7 +103,7 @@ void Skypush::upload(QByteArray ByteArray)
     multiPart->append(imagePart);
 
     QNetworkRequest request(QUrl("https://skyweb.nu/api/upload.php"));
-    request.setRawHeader("token", token.toUtf8());
+    //request.setRawHeader("token", token.toUtf8());
     QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }
@@ -119,46 +111,18 @@ void Skypush::upload(QByteArray ByteArray)
 void Skypush::replyFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject result = jsonToObject(reply->readAll());
-    QString message = result["message"].toString();
-
+    QString response = reply->readAll();
     if (reply->error() == QNetworkReply::NoError)
     {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(message);
-        gui->systemTray->trayIcon->showMessage("Success", message, QSystemTrayIcon::Information, 5000);
-    }
-    else
-    {
-        gui->systemTray->trayIcon->showMessage("Failed", message, QSystemTrayIcon::Critical, 5000);
-    }
-
-    gui->systemTray->trayIcon->setToolTip("Skypush");
-    reply->deleteLater();
-}
-
-void Skypush::getNewToken()
-{
-    QNetworkRequest request(QUrl("https://skyweb.nu/api/init.php"));
-    QNetworkReply* reply = networkManager->get(request);
-    connect(reply, SIGNAL(finished()), this, SLOT(tokenReplyFinished()));
-}
-
-void Skypush::tokenReplyFinished()
-{
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject result = jsonToObject(reply->readAll());
-    QString message = result["message"].toString();
-
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        settingsManager->setValue("program/token", message);
-        token = settingsManager->value("program/token").toString();
+        clipboard->setText(response);
+        gui->systemTray->trayIcon->showMessage("Success", response, QSystemTrayIcon::Information, 5000);
     }
     else
     {
         gui->systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
     }
 
+    gui->systemTray->trayIcon->setToolTip("Skypush");
     reply->deleteLater();
 }

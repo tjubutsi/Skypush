@@ -33,11 +33,6 @@ class Settings : public QDialog
         void on_editWindowHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void on_editEverythingHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void checkSettings();
-        void on_regenerateTokenButton_clicked();
-        void getNewToken();
-        void getTokenReplyFinished();
-        void setNewToken();
-        void setTokenReplyFinished();
         void on_buttonBox_accepted();
 
     private:

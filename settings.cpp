@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "ui_settings.h"
 #include <QHotkey>
+#include <QPushButton>
 
 Settings::Settings(SystemTray *parent) :
     ui(new Ui::Settings),
@@ -13,10 +14,9 @@ Settings::Settings(SystemTray *parent) :
     gui = parent->gui;
     systemTray = parent;
     ui->setupUi(this);
-    ui->editAreaHotkey->setKeySequence(gui->areaHotkey->shortcut());
-    ui->editWindowHotkey->setKeySequence(gui->windowHotkey->shortcut());
-    ui->editEverythingHotkey->setKeySequence(gui->everythingHotkey->shortcut());
-    ui->tokenLineEdit->setText(gui->skypush->token);
+    ui->editAreaHotkey->setKeySequence(settingsManager->value("shortcuts/areaShortcut", "ctrl+shift+4").toString());
+    ui->editWindowHotkey->setKeySequence(settingsManager->value("shortcuts/windowShortcut", "ctrl+shift+4").toString());
+    ui->editEverythingHotkey->setKeySequence(settingsManager->value("shortcuts/everythingShortcut", "ctrl+shift+4").toString());
     connect(ui->editAreaHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editWindowHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editEverythingHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
@@ -63,66 +63,6 @@ void Settings::checkSettings()
     }
 }
 
-void Settings::on_regenerateTokenButton_clicked()
-{
-    getNewToken();
-}
-
-void Settings::getNewToken()
-{
-    QNetworkRequest request(QUrl("https://skyweb.nu/api/init.php"));
-    request.setRawHeader("token", skypush->token.toUtf8());
-    QNetworkReply* reply = skypush->networkManager->get(request);
-    connect(reply, SIGNAL(finished()), this, SLOT(getTokenReplyFinished()));
-}
-
-void Settings::getTokenReplyFinished()
-{
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject result = Skypush::jsonToObject(reply->readAll());
-    QString message = result["message"].toString();
-
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        ui->tokenLineEdit->setText(message);
-    }
-    else
-    {
-        systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
-    }
-
-    reply->deleteLater();
-}
-
-void Settings::setNewToken()
-{
-    QNetworkRequest request(QUrl("https://skyweb.nu/api/convertToken.php"));
-    request.setRawHeader("token", skypush->token.toUtf8());
-    QByteArray data = "newToken=";
-    data.append(ui->tokenLineEdit->text());
-    QNetworkReply* reply = skypush->networkManager->post(request, data);
-    connect(reply, SIGNAL(finished()), this, SLOT(setTokenReplyFinished()));
-}
-
-void Settings::setTokenReplyFinished()
-{
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject result = Skypush::jsonToObject(reply->readAll());
-
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        settingsManager->setValue("program/token", ui->tokenLineEdit->text());
-        skypush->token = settingsManager->value("program/token").toString();
-        accept();
-    }
-    else
-    {
-        systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
-    }
-
-    reply->deleteLater();
-}
-
 void Settings::on_buttonBox_accepted()
 {
     checkSettings();
@@ -130,9 +70,8 @@ void Settings::on_buttonBox_accepted()
     {
         return;
     }
-    setNewToken();
     QKeySequence areaSequence = ui->editAreaHotkey->keySequence()[0];
-    QKeySequence windowSequence = ui->editAreaHotkey->keySequence()[0];
+    QKeySequence windowSequence = ui->editWindowHotkey->keySequence()[0];
     QKeySequence everythingSequence = ui->editEverythingHotkey->keySequence()[0];
     settingsManager->setValue("shortcuts/areaShortcut", areaSequence.toString());
     settingsManager->setValue("shortcuts/windowShortcut", windowSequence.toString());
@@ -144,4 +83,6 @@ void Settings::on_buttonBox_accepted()
     gui->windowHotkey->setRegistered(true);
     gui->everythingHotkey->setShortcut(settingsManager->value("shortcuts/everythingShortcut").toString(), false);
     gui->everythingHotkey->setRegistered(true);
+    settingsManager->sync();
+    accept();
 }

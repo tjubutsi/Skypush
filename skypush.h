@@ -22,7 +22,6 @@ class Skypush : public QObject
         GUI *gui;
 
         QNetworkAccessManager *networkManager;
-        QString token;
 
     signals:
 
@@ -38,8 +37,6 @@ class Skypush : public QObject
         QByteArray convertToByteArray(QPixmap ScreenGrab);
         void upload(QByteArray ByteArray);
         void replyFinished();
-        void getNewToken();
-        void tokenReplyFinished();
 
     private:
         AreaWindow *areaWindow;
