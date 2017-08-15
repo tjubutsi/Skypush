@@ -15,8 +15,11 @@ Settings::Settings(SystemTray *parent) :
     systemTray = parent;
     ui->setupUi(this);
     ui->editAreaHotkey->setKeySequence(settingsManager->value("shortcuts/areaShortcut", "ctrl+shift+4").toString());
-    ui->editWindowHotkey->setKeySequence(settingsManager->value("shortcuts/windowShortcut", "ctrl+shift+4").toString());
-    ui->editEverythingHotkey->setKeySequence(settingsManager->value("shortcuts/everythingShortcut", "ctrl+shift+4").toString());
+    ui->editWindowHotkey->setKeySequence(settingsManager->value("shortcuts/windowShortcut", "ctrl+shift+3").toString());
+    ui->editEverythingHotkey->setKeySequence(settingsManager->value("shortcuts/everythingShortcut", "ctrl+shift+2").toString());
+    gui->areaHotkey->setRegistered(false);
+    gui->windowHotkey->setRegistered(false);
+    gui->everythingHotkey->setRegistered(false);
     connect(ui->editAreaHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editWindowHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editEverythingHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
