@@ -23,6 +23,7 @@ Settings::Settings(GUI *parent) :
     connect(ui->editAreaHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editWindowHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
     connect(ui->editEverythingHotkey, &QKeySequenceEdit::editingFinished, this, &Settings::checkSettings);
+    ui->privateUploadCheckBox->setEnabled(settingsManager->contains("sessionToken"));
 }
 
 Settings::~Settings()

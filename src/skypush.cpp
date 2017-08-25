@@ -93,14 +93,6 @@ void Skypush::upload(QByteArray ByteArray)
     imagePart.setBody(ByteArray);
     imagePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"data\"; filename=\"tmp_name\""));
     QHttpPart textPart;
-    if (gui->privateUpload == true)
-    {
-        textPart.setBody(QByteArray::number(1));
-    }
-    else
-    {
-        textPart.setBody(QByteArray::number(0));
-    }
     textPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"privateUpload\""));
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -111,7 +103,16 @@ void Skypush::upload(QByteArray ByteArray)
     if (!gui->accessToken.isNull())
     {
         request.setRawHeader("token", gui->accessToken.toUtf8());
+        if (gui->privateUpload == true)
+        {
+            textPart.setBody(QByteArray::number(1));
+        }
+        else
+        {
+            textPart.setBody(QByteArray::number(0));
+        }
     }
+
     QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }

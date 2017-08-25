@@ -35,6 +35,7 @@ void Account::initialize()
     else
     {
         enableLogin(true);
+        ui->editEmail->setFocus();
     }
 }
 
@@ -110,8 +111,8 @@ void Account::createUserReply()
     }
     else
     {
-        //TODO: show message that creating user failed
-        qDebug() << response["message"].toString();
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::information(this, "Creating new user failed", response["message"].toString());
     }
     reply->deleteLater();
 }
