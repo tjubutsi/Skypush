@@ -1,5 +1,7 @@
 #include "systemtray.h"
 #include "settings.h"
+#include "account.h"
+#include "gui.h"
 #include <QApplication>
 
 SystemTray::SystemTray(GUI *parent)
@@ -33,10 +35,14 @@ void SystemTray::createContextMenu()
     settingsAction = new QAction(tr("&Settings"), this);
     connect(settingsAction, SIGNAL(triggered()), this, SLOT(openSettings()));
 
+    accountAction = new QAction(tr("&Account"), this);
+    connect(accountAction, SIGNAL(triggered()), this, SLOT(openAccount()));
+
     quitAction = new QAction(tr("&Exit"), this);
     connect(quitAction, SIGNAL(triggered()), this, SLOT(exit()));
 
     trayMenu->addAction(settingsAction);
+    trayMenu->addAction(accountAction);
     trayMenu->addAction(quitAction);
 
     trayIcon->setContextMenu(trayMenu);
@@ -62,11 +68,18 @@ void SystemTray::trayActivate(QSystemTrayIcon::ActivationReason reason)
 
 void SystemTray::openSettings()
 {
-    settings = new Settings(this);
-    settings->show();
+    gui->settings = new Settings(gui);
+    gui->settings->show();
+}
+
+void SystemTray::openAccount()
+{
+    gui->account = new Account(gui);
+    gui->account->show();
 }
 
 void SystemTray::exit()
 {
+    trayIcon->hide();
     qApp->quit();
 }

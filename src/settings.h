@@ -5,9 +5,8 @@
 #include <QNetworkReply>
 #include <QSettings>
 
-class Skypush;
 class GUI;
-class SystemTray;
+class Skypush;
 
 namespace Ui {
     class Settings;
@@ -18,7 +17,7 @@ class Settings : public QDialog
     Q_OBJECT
 
     public:
-        explicit Settings(SystemTray *parent = nullptr);
+        explicit Settings(GUI *parent = nullptr);
         ~Settings();
 
         QSettings *settingsManager;
@@ -26,7 +25,6 @@ class Settings : public QDialog
         //external
         Skypush *skypush;
         GUI *gui;
-        SystemTray *systemTray;
 
     private slots:
         void on_editAreaHotkey_keySequenceChanged(const QKeySequence &keySequence);
@@ -34,8 +32,9 @@ class Settings : public QDialog
         void on_editEverythingHotkey_keySequenceChanged(const QKeySequence &keySequence);
         void checkSettings();
         void on_buttonBox_accepted();
+        void on_buttonBox_rejected();
 
-    private:
+private:
         Ui::Settings *ui;
 };
 

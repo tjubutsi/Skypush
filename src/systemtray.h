@@ -7,7 +7,6 @@
 #include <QSystemTrayIcon>
 
 class GUI;
-class Settings;
 
 class SystemTray : public QObject
 {
@@ -18,12 +17,13 @@ class SystemTray : public QObject
 
         //external
         GUI *gui;
-        Settings *settings;
 
         QMenu *trayMenu;
         QSystemTrayIcon *trayIcon;
-        QAction *quitAction;
         QAction *settingsAction;
+        QAction *accountAction;
+        QAction *quitAction;
+
     private:
 
     private slots:
@@ -31,6 +31,7 @@ class SystemTray : public QObject
         void createContextMenu();
         void trayActivate(QSystemTrayIcon::ActivationReason reason);
         void openSettings();
+        void openAccount();
         void exit();
 };
 

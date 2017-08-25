@@ -28,12 +28,6 @@ Skypush::Skypush(QObject *parent) :
     }
 }
 
-QJsonObject Skypush::jsonToObject(QByteArray bytes)
-{
-    QJsonDocument jsonDocument(QJsonDocument::fromJson(bytes));
-    return jsonDocument.object();
-}
-
 void Skypush::grabArea()
 {
     QScreen *screen = QApplication::primaryScreen();
@@ -98,12 +92,26 @@ void Skypush::upload(QByteArray ByteArray)
     QHttpPart imagePart;
     imagePart.setBody(ByteArray);
     imagePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"data\"; filename=\"tmp_name\""));
-
+    QHttpPart textPart;
+    if (gui->privateUpload == true)
+    {
+        textPart.setBody(QByteArray::number(1));
+    }
+    else
+    {
+        textPart.setBody(QByteArray::number(0));
+    }
+    textPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+    textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"privateUpload\""));
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->append(imagePart);
+    multiPart->append(textPart);
 
     QNetworkRequest request(QUrl("https://skyweb.nu/api/upload.php"));
-    //request.setRawHeader("token", token.toUtf8());
+    if (!gui->accessToken.isNull())
+    {
+        request.setRawHeader("token", gui->accessToken.toUtf8());
+    }
     QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
 }
@@ -111,12 +119,12 @@ void Skypush::upload(QByteArray ByteArray)
 void Skypush::replyFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QString response = reply->readAll();
+    QJsonObject response = Skypush::jsonToObject(reply->readAll());
     if (reply->error() == QNetworkReply::NoError)
     {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(response);
-        gui->systemTray->trayIcon->showMessage("Success", response, QSystemTrayIcon::Information, 5000);
+        clipboard->setText(response["message"].toString());
+        gui->systemTray->trayIcon->showMessage("Success", response["message"].toString(), QSystemTrayIcon::Information, 5000);
     }
     else
     {
@@ -125,4 +133,10 @@ void Skypush::replyFinished()
 
     gui->systemTray->trayIcon->setToolTip("Skypush");
     reply->deleteLater();
+}
+
+QJsonObject Skypush::jsonToObject(QString data)
+{
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(data.toUtf8());
+    return jsonResponse.object();
 }

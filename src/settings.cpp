@@ -6,17 +6,17 @@
 #include <QHotkey>
 #include <QPushButton>
 
-Settings::Settings(SystemTray *parent) :
+Settings::Settings(GUI *parent) :
     ui(new Ui::Settings),
     settingsManager(new QSettings())
 {
-    skypush = parent->gui->skypush;
-    gui = parent->gui;
-    systemTray = parent;
+    skypush = parent->skypush;
+    gui = parent;
     ui->setupUi(this);
     ui->editAreaHotkey->setKeySequence(settingsManager->value("shortcuts/areaShortcut", "ctrl+shift+4").toString());
     ui->editWindowHotkey->setKeySequence(settingsManager->value("shortcuts/windowShortcut", "ctrl+shift+3").toString());
     ui->editEverythingHotkey->setKeySequence(settingsManager->value("shortcuts/everythingShortcut", "ctrl+shift+2").toString());
+    ui->privateUploadCheckBox->setChecked(settingsManager->value("privateUpload", false).toBool());
     gui->areaHotkey->setRegistered(false);
     gui->windowHotkey->setRegistered(false);
     gui->everythingHotkey->setRegistered(false);
@@ -79,6 +79,7 @@ void Settings::on_buttonBox_accepted()
     settingsManager->setValue("shortcuts/areaShortcut", areaSequence.toString());
     settingsManager->setValue("shortcuts/windowShortcut", windowSequence.toString());
     settingsManager->setValue("shortcuts/everythingShortcut", everythingSequence.toString());
+    settingsManager->setValue("privateUpload", ui->privateUploadCheckBox->isChecked());
 
     gui->areaHotkey->setShortcut(settingsManager->value("shortcuts/areaShortcut").toString(), false);
     gui->areaHotkey->setRegistered(true);
@@ -86,6 +87,12 @@ void Settings::on_buttonBox_accepted()
     gui->windowHotkey->setRegistered(true);
     gui->everythingHotkey->setShortcut(settingsManager->value("shortcuts/everythingShortcut").toString(), false);
     gui->everythingHotkey->setRegistered(true);
+    gui->privateUpload = settingsManager->value("privateUpload").toBool();
     settingsManager->sync();
     accept();
+}
+
+void Settings::on_buttonBox_rejected()
+{
+    reject();
 }

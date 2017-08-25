@@ -26,8 +26,6 @@ class Skypush : public QObject
     signals:
 
     public slots:
-        static QJsonObject jsonToObject(QByteArray bytes);
-
         void grabArea();
         void grabWindow();
         void grabEverything();
@@ -37,6 +35,8 @@ class Skypush : public QObject
         QByteArray convertToByteArray(QPixmap ScreenGrab);
         void upload(QByteArray ByteArray);
         void replyFinished();
+
+        static QJsonObject jsonToObject(QString data);
 
     private:
         AreaWindow *areaWindow;

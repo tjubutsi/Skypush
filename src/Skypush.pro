@@ -30,17 +30,20 @@ SOURCES += \
     gui.cpp \
     settings.cpp \
     systemtray.cpp \
-    areawindow.cpp
+    areawindow.cpp \
+    account.cpp
 
 HEADERS += \
     skypush.h \
     gui.h \
     settings.h \
     systemtray.h \
-    areawindow.h
+    areawindow.h \
+    account.h
 
 FORMS += \
-    settings.ui
+    settings.ui \
+    account.ui
 
 RESOURCES += \
     res.qrc

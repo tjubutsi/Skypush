@@ -12,7 +12,6 @@ class AreaWindow : public QWidget
     public:
         AreaWindow(QRect rect, Skypush *parent = nullptr);
 
-        //external
         Skypush *skypush;
 
     public slots:
