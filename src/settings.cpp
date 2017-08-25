@@ -95,5 +95,12 @@ void Settings::on_buttonBox_accepted()
 
 void Settings::on_buttonBox_rejected()
 {
+    gui->areaHotkey->setShortcut(settingsManager->value("shortcuts/areaShortcut").toString(), false);
+    gui->areaHotkey->setRegistered(true);
+    gui->windowHotkey->setShortcut(settingsManager->value("shortcuts/windowShortcut").toString(), false);
+    gui->windowHotkey->setRegistered(true);
+    gui->everythingHotkey->setShortcut(settingsManager->value("shortcuts/everythingShortcut").toString(), false);
+    gui->everythingHotkey->setRegistered(true);
+    gui->privateUpload = settingsManager->value("privateUpload").toBool();
     reject();
 }
