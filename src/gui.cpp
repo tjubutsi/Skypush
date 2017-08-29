@@ -5,6 +5,7 @@
 #include <QHotkey>
 #include <QNetworkReply>
 #include <QSettings>
+#include <QTimer>
 
 GUI::GUI(Skypush *parent) :
     settingsManager(new QSettings())
@@ -89,7 +90,8 @@ void GUI::getClientTokenReply()
     }
     else
     {
-        qDebug() << "shit's fucked";
+        systemTray->trayIcon->showMessage("Initializing failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
+        qApp->quit();
     }
 
     reply->deleteLater();
@@ -119,12 +121,40 @@ void GUI::getAccessTokenReply()
     QJsonObject response = Skypush::jsonToObject(reply->readAll());
     if (reply->error() == QNetworkReply::NoError)
     {
+        qDebug() << "accesstoken get";
         accessToken = response["message"].toString();
+        accessTokenRefreshTimer = new QTimer(this);
+        connect(accessTokenRefreshTimer, SIGNAL(timeout()), SLOT(refreshAccessToken()));
+        accessTokenRefreshTimer->start(1200000);
     }
     else
     {
-        qDebug() << "shit's fucked";
-        systemTray->trayIcon->showMessage("Failed", response["message"].toString(), QSystemTrayIcon::Information, 5000);
+        systemTray->trayIcon->showMessage("Login failed", response["message"].toString(), QSystemTrayIcon::Information, 5000);
+    }
+
+    reply->deleteLater();
+}
+
+void GUI::refreshAccessToken()
+{
+    QNetworkRequest request(QUrl("https://skyweb.nu/api/refresh.php"));
+    request.setRawHeader("token", accessToken.toUtf8());
+    QByteArray empty;
+    QNetworkReply* reply = skypush->networkManager->put(request, empty);
+    connect(reply, SIGNAL(finished()), this, SLOT(refreshAccessTokenReply()));
+}
+
+void GUI::refreshAccessTokenReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    QJsonObject response = Skypush::jsonToObject(reply->readAll());
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        qDebug() << "accesstoken refreshed";
+    }
+    else
+    {
+        systemTray->trayIcon->showMessage("Refreshing login failed", response["message"].toString(), QSystemTrayIcon::Information, 5000);
     }
 
     reply->deleteLater();

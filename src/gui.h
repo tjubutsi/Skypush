@@ -4,6 +4,7 @@
 #include <QHotkey>
 #include <QObject>
 #include <QSettings>
+#include <QTimer>
 
 class Account;
 class Settings;
@@ -30,6 +31,7 @@ class GUI : public QObject
         QString clientToken;
         QString sessionToken;
         QString accessToken;
+        QTimer* accessTokenRefreshTimer;
 
     public slots:
         bool registerHotkeys();
@@ -42,6 +44,8 @@ class GUI : public QObject
         void setAccessToken();
         void getAccessToken();
         void getAccessTokenReply();
+        void refreshAccessToken();
+        void refreshAccessTokenReply();
 };
 
 #endif // GUI_H

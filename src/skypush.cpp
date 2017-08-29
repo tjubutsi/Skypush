@@ -23,7 +23,6 @@ Skypush::Skypush(QObject *parent) :
     gui = new GUI(this);
     if (!gui->registerHotkeys())
     {
-        qDebug() << "registering failed2"; //show message and settings
         qApp->quit();
     }
 }
@@ -125,11 +124,11 @@ void Skypush::replyFinished()
     {
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(response["message"].toString());
-        gui->systemTray->trayIcon->showMessage("Success", response["message"].toString(), QSystemTrayIcon::Information, 5000);
+        gui->systemTray->trayIcon->showMessage("Upload success", response["message"].toString(), QSystemTrayIcon::Information, 5000);
     }
     else
     {
-        gui->systemTray->trayIcon->showMessage("Failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
+        gui->systemTray->trayIcon->showMessage("Upload failed", reply->errorString(), QSystemTrayIcon::Critical, 5000);
     }
 
     gui->systemTray->trayIcon->setToolTip("Skypush");

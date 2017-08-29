@@ -80,6 +80,7 @@ void Account::on_loggedInButtonBox_accepted()
     settingsManager->remove("accessToken");
     settingsManager->remove("sessionToken");
     settingsManager->remove("sessionEmail");
+    gui->accessTokenRefreshTimer->stop();
     initialize();
     return;
 }
@@ -111,8 +112,7 @@ void Account::createUserReply()
     }
     else
     {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::information(this, "Creating new user failed", response["message"].toString());
+        QMessageBox::warning(this, "", response["message"].toString());
     }
     reply->deleteLater();
 }
@@ -141,8 +141,7 @@ void Account::loginReply()
     }
     else
     {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::information(this, "Login failed", response["message"].toString());
+        QMessageBox::warning(this, "", response["message"].toString());
     }
 
     reply->deleteLater();
