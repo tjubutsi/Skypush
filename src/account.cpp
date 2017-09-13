@@ -146,3 +146,18 @@ void Account::loginReply()
 
     reply->deleteLater();
 }
+
+void Account::on_editEmail_returnPressed()
+{
+    on_loginButtonBox_accepted();
+}
+
+void Account::on_editPassword_returnPressed()
+{
+    on_loginButtonBox_accepted();
+}
+
+void Account::on_editVerifyPassword_returnPressed()
+{
+    on_loginButtonBox_accepted();
+}

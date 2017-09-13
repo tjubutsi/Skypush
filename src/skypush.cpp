@@ -95,8 +95,6 @@ void Skypush::upload(QByteArray ByteArray)
     textPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"privateUpload\""));
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-    multiPart->append(imagePart);
-    multiPart->append(textPart);
 
     QNetworkRequest request(QUrl("https://skyweb.nu/api/upload.php"));
     if (!gui->accessToken.isNull())
@@ -111,6 +109,8 @@ void Skypush::upload(QByteArray ByteArray)
             textPart.setBody(QByteArray::number(0));
         }
     }
+    multiPart->append(imagePart);
+    multiPart->append(textPart);
 
     QNetworkReply* reply = networkManager->post(request, multiPart);
     connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));

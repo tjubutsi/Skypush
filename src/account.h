@@ -37,7 +37,13 @@ class Account : public QDialog
         void login();
         void loginReply();
 
-    private:
+        void on_editEmail_returnPressed();
+
+        void on_editPassword_returnPressed();
+
+        void on_editVerifyPassword_returnPressed();
+
+private:
         Ui::Account *ui;
 };
 
